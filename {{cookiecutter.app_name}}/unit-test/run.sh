@@ -19,10 +19,10 @@ plugin_packages=(
 
 # obtain packages changed since some git refspec
 packages_diff() {
-    git -C "${GOPATH}/src/github.com/{{ cookiecutter.github_name }}/{{ cookiecutter.app_name }}" diff --no-commit-id --name-only -r "${1:-HEAD}" |
+    git -C "${GOPATH}/src/github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}" diff --no-commit-id --name-only -r "${1:-HEAD}" |
         grep '.go$' | grep -Ev '^vendor/|^build/' | \
         sed 's%/[^/]*$%/%' | sort -u | \
-        awk '{print "github.com/{{ cookiecutter.github_name }}/{{ cookiecutter.app_name }}/"$1"..."}'
+        awk '{print "github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}/"$1"..."}'
 }
 
 # "go list" packages and filter out excluded packages
@@ -76,7 +76,7 @@ run_tests_with_coverage() {
 
 main() {
     # default behavior is to run all tests
-    local package_spec=${TEST_PKGS:-github.com/\{\{ cookiecutter.github_name \}}/{{ cookiecutter.app_name }}/...}
+    local package_spec=${TEST_PKGS:-github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}/...}
 
     # when running a "verify" job, only test packages that have changed
     if [ "${JOB_TYPE}" = "VERIFY" ]; then

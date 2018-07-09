@@ -11,7 +11,7 @@ ARCH=_ARCH_
 VERSION=_VERSION_
 BASE_DOCKER_TAG=_BASE_DOCKER_TAG_
 
-# set of {{ cookiecutter.github_name }} {{ cookiecutter.app_name }} images
+# set of {{ cookiecutter.github_username }} {{ cookiecutter.app_name }} images
 IMAGES=()
 
 for image in ${IMAGES[@]}; do

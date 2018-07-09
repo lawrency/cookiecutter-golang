@@ -4,7 +4,7 @@
 #
 
 unit-tests:
-  image: {{ cookiecutter.github_name }}/{{ cookiecutter.app_name }}-testenv
+  image: {{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}-testenv
   environment:
     - GO_LDFLAGS
     - GO_TAGS
@@ -15,5 +15,5 @@ unit-tests:
     - JOB_TYPE=${JOB_TYPE}
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-    - ${GOPATH}/src/github.com/{{ cookiecutter.github_name }}/{{ cookiecutter.app_name }}:/opt/gopath/src/github.com/{{ cookiecutter.gethub_name }}/{{ cookiecutter.app_name }}
+    - ${GOPATH}/src/github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}:/opt/gopath/src/github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}
   command: ./unit-test/run.sh
