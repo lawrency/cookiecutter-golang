@@ -53,14 +53,14 @@ DRUN = docker run -i --rm $(DOCKER_RUN_FLAGS) \
 
 DBUILD = docker build $(DOCKER_BUILD_FLAGS)
 
-BASE_DOCKER_NS ?= hyperledger
+BASE_DOCKER_NS ?= {{ cookiecutter.github_username }}
 BASE_DOCKER_TAG=$(ARCH)-$(BASEIMAGE_RELEASE)
 
-DOCKER_NS ?= hyperledger
+DOCKER_NS ?= {{ cookiecutter.github_username }}
 DOCKER_TAG=$(ARCH)-$(PROJECT_VERSION)
 PREV_TAG=$(ARCH)-$(PREV_VERSION)
 
-BASE_DOCKER_LABEL=org.hyperledger.fabric
+BASE_DOCKER_LABEL=org.{{ cookiecutter.github_username }}.{{ cookiecutter.app_name }}
 
 DOCKER_DYNAMIC_LINK ?= false
 DOCKER_GO_LDFLAGS += $(GO_LDFLAGS)

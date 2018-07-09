@@ -8,18 +8,9 @@
 
 set -e
 
+# Add .go directory
 declare -a arr=(
-"./bccsp"
-"./common"
 "./core"
-"./events"
-"./examples"
-"./gossip"
-"./idemix"
-"./msp"
-"./orderer"
-"./peer"
-"./protos"
 )
 
 for i in "${arr[@]}"

@@ -5,44 +5,24 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# regexes for packages to exclude from unit test
+# TODO: regexes for packages to exclude from unit test
 excluded_packages=(
-    "github.com/hyperledger/fabric/bccsp/factory" # this package's tests need to be mocked
-    "github.com/hyperledger/fabric/bccsp/mocks"
-    "github.com/hyperledger/fabric/bddtests"
-    "github.com/hyperledger/fabric/build/"
-    "github.com/hyperledger/fabric/common/ledger/testutil"
-    "github.com/hyperledger/fabric/common/mocks"
-    "github.com/hyperledger/fabric/core/chaincode/platforms/car/test" # until FAB-7629 is resolved
-    "github.com/hyperledger/fabric/core/deliverservice/mocks"
-    "github.com/hyperledger/fabric/core/ledger/kvledger/example"
-    "github.com/hyperledger/fabric/core/ledger/kvledger/marble_example"
-    "github.com/hyperledger/fabric/core/ledger/testutil"
-    "github.com/hyperledger/fabric/core/mocks"
-    "github.com/hyperledger/fabric/core/testutil"
-    "github.com/hyperledger/fabric/examples"
-    "github.com/hyperledger/fabric/orderer/mocks"
-    "github.com/hyperledger/fabric/orderer/sample_clients"
-    "github.com/hyperledger/fabric/test"
-    "github.com/hyperledger/fabric/vendor/"
 )
 
-# regexes for packages that must be run serially
+# TODO: regexes for packages that must be run serially
 serial_packages=(
-    "github.com/hyperledger/fabric/gossip"
 )
 
 # packages which need to be tested with build tag pluginsenabled
 plugin_packages=(
-    "github.com/hyperledger/fabric/core/scc"
 )
 
 # obtain packages changed since some git refspec
 packages_diff() {
-    git -C "${GOPATH}/src/github.com/hyperledger/fabric" diff --no-commit-id --name-only -r "${1:-HEAD}" |
+    git -C "${GOPATH}/src/github.com/{{ cookiecutter.github_name }}/{{ cookiecutter.app_name }}" diff --no-commit-id --name-only -r "${1:-HEAD}" |
         grep '.go$' | grep -Ev '^vendor/|^build/' | \
         sed 's%/[^/]*$%/%' | sort -u | \
-        awk '{print "github.com/hyperledger/fabric/"$1"..."}'
+        awk '{print "github.com/{{ cookiecutter.github_name }}/{{ cookiecutter.app_name }}/"$1"..."}'
 }
 
 # "go list" packages and filter out excluded packages
@@ -96,13 +76,7 @@ run_tests_with_coverage() {
 
 main() {
     # default behavior is to run all tests
-    local package_spec=${TEST_PKGS:-github.com/hyperledger/fabric/...}
-
-    # extra exclusions for ppc and s390x
-    local arch=`uname -m`
-    if [ x${arch} == xppc64le -o x${arch} == xs390x ]; then
-        excluded_packages+=("github.com/hyperledger/fabric/core/chaincode/platforms/java")
-    fi
+    local package_spec=${TEST_PKGS:-github.com/\{\{ cookiecutter.github_name \}}/{{ cookiecutter.app_name }}/...}
 
     # when running a "verify" job, only test packages that have changed
     if [ "${JOB_TYPE}" = "VERIFY" ]; then

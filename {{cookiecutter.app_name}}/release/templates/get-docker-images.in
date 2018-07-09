@@ -1,0 +1,20 @@
+#!/bin/bash -eu
+# Copyright London Stock Exchange Group All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# This script pulls docker images from the Dockerhub hyperledger repositories
+
+# set the default Docker namespace and tag
+DOCKER_NS=_NS_
+ARCH=_ARCH_
+VERSION=_VERSION_
+BASE_DOCKER_TAG=_BASE_DOCKER_TAG_
+
+# set of {{ cookiecutter.github_name }} {{ cookiecutter.app_name }} images
+IMAGES=()
+
+for image in ${IMAGES[@]}; do
+  echo "Pulling ${DOCKER_NS}/$image:${ARCH}-${VERSION}"
+  docker pull ${DOCKER_NS}/$image:${ARCH}-${VERSION}
+done

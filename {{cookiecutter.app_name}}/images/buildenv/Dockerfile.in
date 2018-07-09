@@ -2,8 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM _BASE_NS_/fabric-baseimage:_BASE_TAG_
-COPY payload/protoc-gen-go /usr/local/bin/
-ADD payload/gotools.tar.bz2 /usr/local/bin/
-# temporary fix for https://github.com/golang/go/issues/21373
+FROM _BASE_NS_/{{ cookiecutter.app_name }}-baseimage:_BASE_TAG_
+COPY payload/gotools.tar.bz2 /usr/local/bin/
 RUN go install -a std

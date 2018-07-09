@@ -44,7 +44,7 @@ the docs on your machine. The following sections cover both options:
 
 You can easily build your own staging repo following these steps:
 
-1. Fork [fabric on github](https://github.com/{{cookiecutter.app_name}})
+1. Fork [fabric on github](https://github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}})
 1. From your fork, go to `settings` in the upper right portion of the screen,
 1. click `Integration & services`,
 1. click `Add service` dropdown,
