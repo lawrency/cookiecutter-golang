@@ -17,11 +17,11 @@ GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
 # Allow to build as a submodule setting the main project to
 # the PROJECT_NAME env variable, for example,
-# export PROJECT_NAME={{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}-test
+# export PROJECT_NAME={{cookiecutter.github_name}}/{{cookiecutter.app_name}}-test
 ifeq ($(PROJECT_NAME),true)
-PROJECT_NAME = $(PROJECT_NAME)/{{ cookiecutter.app_name }}
+PROJECT_NAME = $(PROJECT_NAME)/{{cookiecutter.app_name}}
 else
-PROJECT_NAME = {{ cookiecutter.github_username }}/{{ cookiecutter.app_name }}
+PROJECT_NAME = {{cookiecutter.github_name}}/{{cookiecutter.app_name}}
 endif
 IS_RELEASE = false
 EXPERIMENTAL ?= true
@@ -54,11 +54,9 @@ PROJECT_FILES = $(shell git ls-files  | grep -v ^test | grep -v ^unit-test | \
     grep -v ^LICENSE )
 
 RELEASE_PLATFORMS = windows-amd64 linux-amd64
-#TODO: release bin list
-RELEASE_PKGS = 
 IMAGES = buildenv testenv tools
 
-pkgmap.{{ cookiecutter.app_name }}           := $(PKGNAME)/{{ cookiecutter.app_name }}
+pkgmap.{{cookiecutter.app_name}}           := $(PKGNAME)/{{cookiecutter.app_name}}
 
 include docker-env.mk
 
@@ -113,34 +111,32 @@ spelling:
 	@scripts/check_spelling.sh
 
 ## 2. linter
-linter: buildenv
+linter:
 	@echo "LINT: Running code checks.."
-	@$(DRUN) $(DOCKER_NS)/{{ cookiecutter.app_name }}-buildenv:$(DOCKER_TAG) ./scripts/golinter.sh
+	@scripts/golinter.sh
 
 ## 3. unit-test
-unit-test: unit-test-clean testenv docker-thirdparty
-	cd unit-test && docker-compose up --abort-on-container-exit --force-recreate && docker-compose down
+unit-test: unit-test-clean
+	cd unit-test && ./run.sh
 
 ## 4. behave
-behave-deps: docker docker-thirdparty
-behave: behave-deps
+behave:
 	@echo "Running behave tests"
 	@cd /test/regressive/bddtests; behave $(BEHAVE_OPTS)
 
 ## 5. others
+verify: unit-test-clean
+	cd unit-test && JOB_TYPE=VERIFY ./run.sh
 
-verify: unit-test-clean testenv
-	cd unit-test && JOB_TYPE=VERIFY docker-compose up --abort-on-container-exit --force-recreate && docker-compose down
-
-profile: unit-test-clean testenv
-	cd unit-test && JOB_TYPE=PROFILE docker-compose up --abort-on-container-exit --force-recreate && docker-compose down
+profile: unit-test-clean
+	cd unit-test && JOB_TYPE=PROFILE ./run.sh
 
 ### 6. envs
 
 buildenv:
 	@echo "TODO: Add docker build images for buildenv"
 
-testenv: docker-thirdparty
+testenv: 
 	@echo "TODO: add test docker iages for testenv"
 
 ########### Tools ###############
@@ -156,31 +152,13 @@ get-deps:
 changelog:
 	./scripts/changelog.sh v$(PREV_VERSION) v$(BASE_VERSION)
 
-############ Dist ##############
-.PHONY: dist
-dist: dist-clean dist/$(MARCH)
-
-dist-all: dist-clean $(patsubst %,dist/%, $(RELEASE_PLATFORMS))
-
-dist/%: release/%
-	mkdir -p release/$(@F)/config
-	cp -r sampleconfig/*.yaml release/$(@F)/config
-	cd release/$(@F) && tar -czvf {{ cookiecutter.github_username }}-{{ cookiecutter.app_name }}-$(@F).$(PROJECT_VERSION).tar.gz *
-
-############ Build ##################
+############ Build docker ##################
 # TODO: docker image build begins
 docker: $(patsubst %,build/image/%/$(DUMMY), $(IMAGES))
 
-# Pull thirdparty docker images based on the latest baseimage release version
-.PHONY: docker-thirdparty
-docker-thirdparty:
-	docker pull $(BASE_DOCKER_NS)/{{ cookiecutter.app_name }}-mysql:$(BASE_DOCKER_TAG)
-	docker tag $(BASE_DOCKER_NS)/{{ cookiecutter.app_name }}-mysql:$(BASE_DOCKER_TAG) $(DOCKER_NS)/{{ cookiecutter.app_name }}-mysql
-	@echo "TODO Add depends third party docker imgage, inc mysql, kafka."
-
 %-docker-list:
 	$(eval TARGET = ${patsubst %-docker-list,%,${@}})
-	@echo $(DOCKER_NS)/{{ cookiecutter.app_name }}-$(TARGET):$(DOCKER_TAG)
+	@echo $(DOCKER_NS)/{{cookiecutter.app_name}}-$(TARGET):$(DOCKER_TAG)
 
 docker-list: $(patsubst %,%-docker-list, $(IMAGES))
 
@@ -196,7 +174,7 @@ build/docker/bin/%: $(PROJECT_FILES)
 	@$(DRUN) \
 		-v $(abspath build/docker/bin):/opt/gopath/bin \
 		-v $(abspath build/docker/$(TARGET)/pkg):/opt/gopath/pkg \
-		$(BASE_DOCKER_NS)/{{ cookiecutter.app_name }}-baseimage:$(BASE_DOCKER_TAG) \
+		$(BASE_DOCKER_NS)/{{cookiecutter.app_name}}-baseimage:$(BASE_DOCKER_TAG) \
 		go install -tags "$(GO_TAGS)" -ldflags "$(DOCKER_GO_LDFLAGS)" $(pkgmap.$(@F))
 	@touch $@
 
@@ -205,7 +183,7 @@ build/docker/gotools: gotools/Makefile
 	@$(DRUN) \
 		-v $(abspath $@):/opt/gotools \
 		-w /opt/gopath/src/$(PKGNAME)/gotools \
-		$(BASE_DOCKER_NS)/{{ cookiecutter.app_name }}-baseimage:$(BASE_DOCKER_TAG) \
+		$(BASE_DOCKER_NS)/{{cookiecutter.app_name}}-baseimage:$(BASE_DOCKER_TAG) \
 		make install BINDIR=/opt/gotools/bin OBJDIR=/opt/gotools/obj
 
 ### 2 bin
@@ -218,6 +196,15 @@ build/bin/%: $(PROJECT_FILES)
 	@touch $@
 
 ### 3 image
+build/gotools.tar.bz2: build/docker/gotools
+	(cd $</bin && tar -jc *) > $@
+
+build/sampleconfig.tar.bz2: $(shell find sampleconfig -type f)
+	(cd sampleconfig && tar -jc *) > $@
+
+build/%.tar.bz2:
+	@echo "Creating $@"
+	@tar -jc $^ > $@
 
 # payload definitions
 build/image/buildenv/payload:   build/gotools.tar.bz2
@@ -241,20 +228,22 @@ build/image/%/Dockerfile: images/%/Dockerfile.in
 build/image/%/$(DUMMY): Makefile build/image/%/payload build/image/%/Dockerfile
 	$(eval TARGET = ${patsubst build/image/%/$(DUMMY),%,${@}})
 	@echo "Building docker $(TARGET)-image"
-	$(DBUILD) -t $(DOCKER_NS)/{{ cookiecutter.app_name }}-$(TARGET) $(@D)
-	docker tag $(DOCKER_NS)/{{ cookiecutter.app_name }}-$(TARGET) $(DOCKER_NS)/{{ cookiecutter.app_name }}-$(TARGET):$(DOCKER_TAG)
+	$(DBUILD) -t $(DOCKER_NS)/{{cookiecutter.app_name}}-$(TARGET) $(@D)
+	docker tag $(DOCKER_NS)/{{cookiecutter.app_name}}-$(TARGET) $(DOCKER_NS)/{{cookiecutter.app_name}}-$(TARGET):$(DOCKER_TAG)
 	@touch $@
 
-### 4 others
-build/gotools.tar.bz2: build/docker/gotools
-	(cd $</bin && tar -jc *) > $@
+build/image/testenv/$(DUMMY): build/image/buildenv/$(DUMMY)
 
-build/sampleconfig.tar.bz2: $(shell find sampleconfig -type f)
-	(cd sampleconfig && tar -jc *) > $@
+############ Dist ##############
+.PHONY: dist
+dist: dist-clean dist/$(MARCH)
 
-build/%.tar.bz2:
-	@echo "Creating $@"
-	@tar -jc $^ > $@
+dist-all: dist-clean $(patsubst %,dist/%, $(RELEASE_PLATFORMS))
+
+dist/%: release/%
+	mkdir -p release/$(@F)/config
+	cp -r sampleconfig/*.yaml release/$(@F)/config
+	cd release/$(@F) && tar -czvf {{cookiecutter.github_name}}-{{cookiecutter.app_name}}-$(@F).$(PROJECT_VERSION).tar.gz *
 
 ############ Release ##################
 
@@ -298,12 +287,12 @@ clean: docker-clean unit-test-clean release-clean
 
 .PHONY: clean-all
 clean-all: clean gotools-clean dist-clean
-	-@rm -rf /var/{{ cookiecutter.github_username }}/* ||:
+	-@rm -rf /var/{{cookiecutter.github_name}}/* ||:
 
 .PHONY: dist-clean
 dist-clean:
-	-@rm -rf release/windows-amd64/{{ cookiecutter.github_username }}-{{ cookiecutter.app_name }}-windows-amd64.$(PROJECT_VERSION).tar.gz ||:
-	-@rm -rf release/linux-amd64/{{ cookiecutter.github_username }}-{{ cookiecutter.app_name }}-linux-amd64.$(PROJECT_VERSION).tar.gz ||:
+	-@rm -rf release/windows-amd64/{{cookiecutter.github_name}}-{{cookiecutter.app_name}}-windows-amd64.$(PROJECT_VERSION).tar.gz ||:
+	-@rm -rf release/linux-amd64/{{cookiecutter.github_name}}-{{cookiecutter.app_name}}-linux-amd64.$(PROJECT_VERSION).tar.gz ||:
 
 %-release-clean:
 	$(eval TARGET = ${patsubst %-release-clean,%,${@}})
@@ -313,10 +302,8 @@ release-clean: $(patsubst %,%-release-clean, $(RELEASE_PLATFORMS))
 
 .PHONY: unit-test-clean
 unit-test-clean:
-	cd unit-test && docker-compose down
+	cd unit-test
 
 .PHONY: gotools-clean
 gotools-clean:
 	cd gotools && $(MAKE) clean
-
-
