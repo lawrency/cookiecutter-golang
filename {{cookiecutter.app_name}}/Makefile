@@ -17,11 +17,11 @@ GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
 # Allow to build as a submodule setting the main project to
 # the PROJECT_NAME env variable, for example,
-# export PROJECT_NAME={{cookiecutter.github_name}}/{{cookiecutter.app_name}}-test
+# export PROJECT_NAME={{cookiecutter.gihub_username}}/{{cookiecutter.app_name}}-test
 ifeq ($(PROJECT_NAME),true)
 PROJECT_NAME = $(PROJECT_NAME)/{{cookiecutter.app_name}}
 else
-PROJECT_NAME = {{cookiecutter.github_name}}/{{cookiecutter.app_name}}
+PROJECT_NAME = {{cookiecutter.gihub_username}}/{{cookiecutter.app_name}}
 endif
 IS_RELEASE = false
 EXPERIMENTAL ?= true
@@ -243,7 +243,7 @@ dist-all: dist-clean $(patsubst %,dist/%, $(RELEASE_PLATFORMS))
 dist/%: release/%
 	mkdir -p release/$(@F)/config
 	cp -r sampleconfig/*.yaml release/$(@F)/config
-	cd release/$(@F) && tar -czvf {{cookiecutter.github_name}}-{{cookiecutter.app_name}}-$(@F).$(PROJECT_VERSION).tar.gz *
+	cd release/$(@F) && tar -czvf {{cookiecutter.gihub_username}}-{{cookiecutter.app_name}}-$(@F).$(PROJECT_VERSION).tar.gz *
 
 ############ Release ##################
 
@@ -287,12 +287,12 @@ clean: docker-clean unit-test-clean release-clean
 
 .PHONY: clean-all
 clean-all: clean gotools-clean dist-clean
-	-@rm -rf /var/{{cookiecutter.github_name}}/* ||:
+	-@rm -rf /var/{{cookiecutter.gihub_username}}/* ||:
 
 .PHONY: dist-clean
 dist-clean:
-	-@rm -rf release/windows-amd64/{{cookiecutter.github_name}}-{{cookiecutter.app_name}}-windows-amd64.$(PROJECT_VERSION).tar.gz ||:
-	-@rm -rf release/linux-amd64/{{cookiecutter.github_name}}-{{cookiecutter.app_name}}-linux-amd64.$(PROJECT_VERSION).tar.gz ||:
+	-@rm -rf release/windows-amd64/{{cookiecutter.gihub_username}}-{{cookiecutter.app_name}}-windows-amd64.$(PROJECT_VERSION).tar.gz ||:
+	-@rm -rf release/linux-amd64/{{cookiecutter.gihub_username}}-{{cookiecutter.app_name}}-linux-amd64.$(PROJECT_VERSION).tar.gz ||:
 
 %-release-clean:
 	$(eval TARGET = ${patsubst %-release-clean,%,${@}})
