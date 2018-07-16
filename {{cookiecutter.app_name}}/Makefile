@@ -54,6 +54,7 @@ PROJECT_FILES = $(shell git ls-files  | grep -v ^test | grep -v ^unit-test | \
     grep -v ^LICENSE )
 
 RELEASE_PLATFORMS = windows-amd64 linux-amd64
+IMAGES = buildenv testenv tools
 
 pkgmap.{{ cookiecutter.app_name }}           := $(PKGNAME)/{{ cookiecutter.app_name }}
 
