@@ -39,6 +39,7 @@ endif
 
 PKGNAME = github.com/$(PROJECT_NAME)
 CGO_FLAGS = CGO_CFLAGS=" "
+ARCH=$(shell uname -m)
 MARCH=$(shell go env GOOS)-$(shell go env GOARCH)
 
 # check depend exec exist.
