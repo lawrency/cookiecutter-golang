@@ -7,9 +7,9 @@
 # This makefile defines the following targets
 ## 0. vars
 
-BASE_VERSION = 1.1.1
-PREV_VERSION = 1.1.0
-BASEIMAGE_RELEASE=0.4.6
+BASE_VERSION = 0.0.1
+PREV_VERSION = 0.0.1
+BASEIMAGE_RELEASE=0.1.0
 
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
@@ -242,8 +242,6 @@ build/image/%/$(DUMMY): Makefile build/image/%/payload build/image/%/Dockerfile
 	$(DBUILD) -t $(DOCKER_NS)/{{ cookiecutter.app_name }}-$(TARGET) $(@D)
 	docker tag $(DOCKER_NS)/{{ cookiecutter.app_name }}-$(TARGET) $(DOCKER_NS)/{{ cookiecutter.app_name }}-$(TARGET):$(DOCKER_TAG)
 	@touch $@
-
-build/image/testenv/$(DUMMY): build/image/buildenv/$(DUMMY)
 
 ### 4 others
 build/gotools.tar.bz2: build/docker/gotools
