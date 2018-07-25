@@ -146,7 +146,7 @@ gotools:
 	cd gotools && $(MAKE) install BINDIR=$(GOPATH)/bin
 
 get-deps:
-	dep ensure
+	govendor fetch +m 
 
 ########## Changelog #############
 changelog:
